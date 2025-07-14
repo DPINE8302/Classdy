@@ -1,6 +1,6 @@
 {
   "name": "Classdy",
-  "description": "Classdy: Your personal attendance and schedule assistant. Manage your academic life with offline support and a helpful chat assistant.",
+  "description": "A modern, offline-first PWA to help students manage their academic life. It features attendance tracking, schedule management, performance analytics, and a helpful chat assistant.",
   "requestFramePermissions": [],
-  "prompt": ""
+  "prompt": "Create a student assistant PWA named Classdy. It should help users track their class attendance, manage schedules, and view analytics on their punctuality. The app must be fully responsive, work 100% offline, and include a rule-based chat assistant for answering questions about the user's schedule. The UI should be clean, modern, and intuitive."
 }
