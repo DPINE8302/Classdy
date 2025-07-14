@@ -1,0 +1,127 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Classdy</title>
+    <meta name="description" content="Classdy: Your new intelligent attendance and schedule assistant.">
+    <meta name="theme-color" content="#f4f5f7" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#18181b" media="(prefers-color-scheme: dark)">
+    
+    <link rel="manifest" href="/manifest.json">
+    <link rel="apple-touch-icon" href="/icon.svg">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+      :root {
+        --color-primary: rgb(0 122 255);
+        --color-primary-hover: rgb(0 100 225);
+        --color-primary-rgb: 0, 122, 255;
+      }
+
+      /* Custom scrollbar for a more modern look */
+      ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+      }
+      ::-webkit-scrollbar-track {
+        background-color: transparent;
+      }
+      ::-webkit-scrollbar-thumb {
+        background-color: rgba(128, 128, 128, 0.3);
+        border-radius: 10px;
+        border: 2px solid transparent;
+        background-clip: content-box;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background-color: rgba(128, 128, 128, 0.5);
+      }
+      .dark ::-webkit-scrollbar-thumb {
+         background-color: rgba(255, 255, 255, 0.2);
+      }
+      .dark ::-webkit-scrollbar-thumb:hover {
+         background-color: rgba(255, 255, 255, 0.3);
+      }
+    </style>
+    <script>
+      // Flash of unstyled content (FOUC) prevention
+      const settingsRaw = localStorage.getItem('classdy-settings');
+      const theme = settingsRaw ? JSON.parse(settingsRaw).theme : 'system';
+      if (theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        document.documentElement.classList.add('dark');
+      }
+
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Inter', 'sans-serif'],
+            },
+            colors: {
+              primary: {
+                DEFAULT: 'var(--color-primary)',
+                hover: 'var(--color-primary-hover)'
+              },
+              success: { DEFAULT: '#34C759', dark: '#30A14F' },
+              warning: { DEFAULT: '#FF9500', dark: '#D97E00' },
+              danger: { DEFAULT: '#FF3B30', dark: '#D93229' },
+              holiday: { DEFAULT: '#5856D6', dark: '#6A67F0'},
+              info: { DEFAULT: '#8E8E93' }, // Neutral info color
+            },
+            borderRadius: {
+              'xl': '1rem',
+              '2xl': '1.25rem',
+            },
+            boxShadow: {
+              'soft': '0 1px 3px rgba(0, 0, 0, 0.05), 0 2px 8px rgba(0, 0, 0, 0.05)',
+              'soft-lg': '0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -4px rgba(0, 0, 0, 0.1)',
+            },
+            animation: {
+                'fade-in': 'fadeIn 0.2s ease-out forwards',
+            },
+            keyframes: {
+                fadeIn: {
+                    '0%': { opacity: 0, transform: 'translateY(10px) scale(0.98)' },
+                    '100%': { opacity: 1, transform: 'translateY(0) scale(1)' },
+                },
+            },
+          }
+        }
+      }
+    </script>
+<script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@^19.1.0",
+    "react-dom/client": "https://esm.sh/react-dom@^19.1.0/client",
+    "lucide-react": "https://esm.sh/lucide-react@^0.525.0",
+    "date-fns": "https://esm.sh/date-fns@^4.1.0",
+    "recharts": "https://esm.sh/recharts@^3.1.0",
+    "react-dom/": "https://esm.sh/react-dom@^19.1.0/",
+    "react/": "https://esm.sh/react@^19.1.0/"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+  <body class="bg-zinc-100 dark:bg-zinc-900 font-sans text-zinc-900 dark:text-zinc-50 antialiased">
+    <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js').then(registration => {
+            console.log('Service Worker registered with scope: ', registration.scope);
+          }).catch(error => {
+            console.log('Service Worker registration failed: ', error);
+          });
+        });
+      }
+    </script>
+  </body>
+</html>
