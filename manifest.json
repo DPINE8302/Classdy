@@ -2,7 +2,7 @@
 {
   "name": "Classdy",
   "short_name": "Classdy",
-  "description": "Classdy: Your new intelligent attendance and schedule assistant.",
+  "description": "Classdy: Your personal attendance and schedule assistant.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#f4f5f7",

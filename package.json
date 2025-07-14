@@ -1,0 +1,30 @@
+{
+  "name": "classdy",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "A modern, offline-first PWA to help students manage their academic life, track attendance, and view schedules.",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/YOUR_USERNAME/classdy.git"
+  },
+  "license": "MIT",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "react": "^19.1.0",
+    "react-dom/client": "^19.1.0",
+    "lucide-react": "^0.525.0",
+    "date-fns": "^4.1.0",
+    "recharts": "^3.1.0",
+    "react-dom": "^19.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.14.0",
+    "typescript": "~5.7.2",
+    "vite": "^6.2.0"
+  }
+}
