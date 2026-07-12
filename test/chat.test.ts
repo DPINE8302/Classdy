@@ -1,0 +1,5 @@
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { processQuestion } from '../lib/chat';
+import type { Schedule } from '../types';
+const schedules: Schedule[] = [{ id: 'term', name: 'Term', startDate: '2026-01-01', endDate: '2026-12-31', rules: [{ dayOfWeek: 1, classes: [{ id: 'math', subject: 'Mathematics คณิตศาสตร์', startTime: '08:00', endTime: '09:00', room: 'A201', tasks: [] }] }] }];
+describe('offline assistant', () => { beforeEach(() => { vi.useFakeTimers(); vi.setSystemTime(new Date(2026, 6, 12, 7)); }); afterEach(() => vi.useRealTimers()); it('answers English day questions', () => expect(JSON.stringify(processQuestion('What do I have on Monday?', schedules, { 'Mathematics คณิตศาสตร์': { color: '#000' } }, 'en'))).toContain('Mathematics')); it('answers Thai subject questions safely', () => expect(JSON.stringify(processQuestion('วันจันทร์มีเรียนคณิตศาสตร์ไหม', schedules, { 'Mathematics คณิตศาสตร์': { color: '#000' } }, 'th'))).toContain('คณิตศาสตร์')); });
