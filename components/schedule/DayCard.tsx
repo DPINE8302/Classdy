@@ -40,6 +40,7 @@ export const DayCard: React.FC<DayCardProps> = ({ rule, subjectMeta, isToday, on
                                 </div>
                                 <span className="text-xs text-zinc-500 dark:text-zinc-400">{formatTime(cls.startTime)}</span>
                             </div>
+                            {(cls.room || cls.code) && <p className="mt-1 truncate pl-4 text-xs text-zinc-500 dark:text-zinc-400">{cls.code ? `${cls.code} · ` : ''}{cls.room}</p>}
                             {pendingTasks > 0 && (
                                 <button onClick={(e) => { e.stopPropagation(); onOpenTaskModal(rule.dayOfWeek, cls.id); }} className="text-xs text-danger dark:text-red-400 font-semibold mt-1 flex items-center gap-1 pl-4">
                                    <NotebookText size={12}/> {pendingTasks} pending task{pendingTasks > 1 ? 's' : ''}

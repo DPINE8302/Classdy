@@ -128,6 +128,7 @@ export const Timeline: React.FC<TimelineProps> = ({ rule, subjectMeta, onOpenTas
                                             {cls.isOnline && <span className="font-medium text-xs"> (Flipped)</span>}
                                         </p>
                                         <p className="text-xs" style={{color: `${meta.color}B3`}}>{formatTime(cls.startTime)} - {formatTime(cls.endTime)}</p>
+                                        {(cls.room || cls.code) && <p className="truncate text-xs text-zinc-600 dark:text-zinc-300">{cls.code ? `${cls.code} · ` : ''}{cls.room}{cls.teacher ? ` · ${cls.teacher}` : ''}</p>}
                                         {pendingTasks > 0 && (
                                             <button 
                                                 onClick={() => onOpenTaskModal(rule.dayOfWeek, cls.id)} 

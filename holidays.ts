@@ -62,4 +62,20 @@ export const THAI_HOLIDAYS_2025: Holiday[] = [
   { date: '2026-01-02', name: 'Mid-term Break' },
   { date: '2026-01-03', name: 'Mid-term Break' },
   { date: '2026-01-04', name: 'Mid-term Break' },
+
+  // Academic Year 2569 school calendar (Semester 1)
+  { date: '2026-06-01', name: 'Visakha Bucha Day' },
+  { date: '2026-06-03', name: 'Queen Suthida\'s Birthday' },
+  { date: '2026-07-28', name: 'King Vajiralongkorn\'s Birthday' },
+  { date: '2026-07-29', name: 'Asalha Bucha Day' },
+  { date: '2026-07-30', name: 'Khao Phansa Day' },
+  { date: '2026-08-12', name: 'The Queen Mother\'s Birthday / Mother\'s Day' },
+  { date: '2026-09-23', name: 'Prince Mahidol Day' },
+  { date: '2026-09-30', name: 'Semester 1 Final Examination Period' },
+  { date: '2026-10-01', name: 'Semester 1 Final Examination Period' },
+  { date: '2026-10-02', name: 'Semester 1 Final Examination Period' },
+  { date: '2026-10-03', name: 'Semester 1 Final Examination Period' },
+  { date: '2026-10-04', name: 'Semester 1 Final Examination Period' },
+  { date: '2026-10-05', name: 'Semester 1 Final Examination Period' },
+  { date: '2026-10-06', name: 'Semester 1 Final Examination Period' },
 ].sort((a, b) => a.date.localeCompare(b.date));

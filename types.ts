@@ -18,6 +18,7 @@ export interface ClassSession {
   room?: string;
   teacher?: string;
   notes?: string;
+  code?: string;
 }
 
 export interface ScheduleRule {

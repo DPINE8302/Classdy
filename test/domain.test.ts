@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { attendanceStatus, duplicateSchedule, isTaskOverdue, localDateKey, overlaps, parseLocalDate, selectSchedule } from '../lib/domain';
 import type { ClassSession, Schedule } from '../types';
+import { M5_SEMESTER_1_2569 } from '../constants';
 
 const cls = (id: string, startTime: string, endTime: string): ClassSession => ({ id, subject: id, startTime, endTime, tasks: [] });
 const schedule = (id: string, startDate: string, endDate: string): Schedule => ({ id, name: id, startDate, endDate, rules: [{ dayOfWeek: 1, classes: [cls('math', '08:00', '09:00')] }] });
@@ -12,4 +13,5 @@ describe('academic domain', () => {
   it('applies grace periods and manual/holiday states', () => { const first = cls('a', '08:00', '09:00'); expect(attendanceStatus({ id: 'x', date: '2026-01-01', arrivalTime: '08:05', departureTime: null }, first, 5, undefined)).toBe('ON_TIME'); expect(attendanceStatus({ id: 'x', date: '2026-01-01', arrivalTime: '08:06', departureTime: null }, first, 5, undefined)).toBe('LATE'); expect(attendanceStatus(undefined, first, 0, { date: '2026-01-01', name: 'Holiday' })).toBe('HOLIDAY'); });
   it('duplicates nested schedule data without retaining ids', () => { const copy = duplicateSchedule(schedule('a', '2026-01-01', '2026-12-31'), 'b'); expect(copy.id).toBe('b'); expect(copy.rules[0].classes[0].id).not.toBe('math'); });
   it('calculates incomplete overdue tasks', () => { expect(isTaskOverdue({ id: '1', text: 'Essay', completed: false, dueDate: '2026-01-01' }, '2026-01-02')).toBe(true); expect(isTaskOverdue({ id: '1', text: 'Essay', completed: true, dueDate: '2026-01-01' }, '2026-01-02')).toBe(false); });
+  it('ships the M.5 AY 2569 timetable with 15 subjects and 32 periods', () => { const classes = M5_SEMESTER_1_2569.rules.flatMap((rule) => rule.classes); const subjects = new Set(classes.map((item) => item.subject)); const periods = classes.reduce((total, item) => total + Math.round((Number(item.endTime.slice(0, 2)) * 60 + Number(item.endTime.slice(3)) - Number(item.startTime.slice(0, 2)) * 60 - Number(item.startTime.slice(3))) / 45), 0); expect(subjects.size).toBe(15); expect(periods).toBe(32); });
 });

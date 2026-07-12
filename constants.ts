@@ -113,8 +113,45 @@ export const SAMPLE_SCHEDULES: Schedule[] = [
   },
 ];
 
-// New users begin with onboarding; existing local data is preserved by the storage layer.
-export const INITIAL_SCHEDULES: Schedule[] = [];
+export const M5_SEMESTER_1_2569: Schedule = {
+  id: 'm5-semester-1-2569',
+  name: 'M.5 Semester 1 — AY 2569 (IM)',
+  startDate: '2026-06-08',
+  endDate: '2026-10-06',
+  rules: [
+    { dayOfWeek: 1, classes: [] },
+    { dayOfWeek: 2, classes: [
+      { id: 'm5-tue-art', subject: 'ศิลปะ 9 / Art 9', code: 'ศ32101', startTime: '08:15', endTime: '09:45', teacher: 'อ.ชญานิศ', room: 'Flipped Classroom', notes: 'Flipped Classroom', isOnline: true, tasks: [] },
+      { id: 'm5-tue-science', subject: 'วิทยาศาสตร์กายภาพ 2 / Physical Science 2', code: 'ว32103', startTime: '09:50', endTime: '11:20', teacher: 'อ.โยธิชา', room: '558', tasks: [] },
+      { id: 'm5-tue-sculpting', subject: 'การปั้นโมเดล 3 มิติ / 3D Model Sculpting', code: 'ว32297', startTime: '12:55', endTime: '15:15', teacher: 'อ.คัทลียา', room: '1903', notes: 'Five-minute break from 14:25–14:30', tasks: [] },
+      { id: 'm5-tue-guidance', subject: 'แนะแนว / Guidance', code: 'กน9', startTime: '15:15', endTime: '16:00', teacher: 'อ.กัญญาพัชร', room: '1903', tasks: [] },
+    ] },
+    { dayOfWeek: 3, classes: [
+      { id: 'm5-wed-game', subject: 'การออกแบบและพัฒนาเกม / Game Design and Development', code: 'ว32274', startTime: '08:15', endTime: '09:45', teacher: 'ผศ.สุคนธ์, อ.คัทลียา', room: '1901', tasks: [] },
+      { id: 'm5-wed-math', subject: 'คณิตศาสตร์ 9 / Mathematics 9', code: 'ค32101', startTime: '09:50', endTime: '11:20', teacher: 'อ.มลิธชา', room: '1810', tasks: [] },
+      { id: 'm5-wed-listening', subject: 'อังกฤษฟัง-พูดเพื่อสื่อสาร 3 / English Listening–Speaking 3', code: 'อ32221', startTime: '12:55', endTime: '14:25', teacher: 'อ.Diana, อ.พาขวัญ', room: '525', tasks: [] },
+      { id: 'm5-wed-industry', subject: 'การงานอาชีพ (อุตสาหกรรม) / Industrial Occupations', code: 'ง32101', startTime: '14:30', endTime: '16:00', teacher: 'อ.วัชชมา', room: 'Flipped Classroom', notes: 'Flipped Classroom', isOnline: true, tasks: [] },
+    ] },
+    { dayOfWeek: 4, classes: [
+      { id: 'm5-thu-thai', subject: 'ภาษาไทย 9 / Thai 9', code: 'ท32101', startTime: '08:15', endTime: '09:45', teacher: 'อ.ดร.สุวิมล', room: '1209', tasks: [] },
+      { id: 'm5-thu-game', subject: 'การออกแบบและพัฒนาเกม / Game Design and Development', code: 'ว32274', startTime: '09:50', endTime: '11:20', teacher: 'ผศ.สุคนธ์, อ.คัทลียา', room: '1901', tasks: [] },
+      { id: 'm5-thu-programming', subject: 'การเขียนโปรแกรมคอมพิวเตอร์ 1 / Computer Programming 1', code: 'ว30254', startTime: '12:55', endTime: '14:25', teacher: 'อ.ธนภูมิ', room: '1901', tasks: [] },
+      { id: 'm5-thu-addmath', subject: 'คณิตศาสตร์เพิ่มเติม (3) / Additional Mathematics 3', code: 'ค32214', startTime: '14:30', endTime: '16:00', teacher: 'อ.มลิธชา', room: '1712', tasks: [] },
+    ] },
+    { dayOfWeek: 5, classes: [
+      { id: 'm5-fri-addmath', subject: 'คณิตศาสตร์เพิ่มเติม (3) / Additional Mathematics 3', code: 'ค32214', startTime: '08:15', endTime: '09:45', teacher: 'อ.มลิธชา', room: '555', tasks: [] },
+      { id: 'm5-fri-english', subject: 'ภาษาอังกฤษ 9 / English 9', code: 'อ32101', startTime: '09:50', endTime: '11:20', teacher: 'อ.ดลพร', room: '555', tasks: [] },
+      { id: 'm5-fri-social', subject: 'สังคมศึกษา ศาสนาและวัฒนธรรม 9 / Social Studies 9', code: 'ส32101', startTime: '12:55', endTime: '14:25', teacher: 'อ.กิ่งกาญจน์', room: '555', tasks: [] },
+      { id: 'm5-fri-pe', subject: 'พลศึกษา 9 / Physical Education 9', code: 'พ32103', startTime: '14:30', endTime: '15:15', teacher: 'อ.คัทลียา', room: 'Self-study / assigned work', notes: 'Self-study or assigned work', tasks: [] },
+      { id: 'm5-fri-health', subject: 'สุขศึกษา 9 / Health Education 9', code: 'พ32101', startTime: '15:15', endTime: '16:00', teacher: 'อ.คัทลียา', room: 'Self-study / assigned work', notes: 'Self-study or assigned work', tasks: [] },
+    ] },
+    { dayOfWeek: 6, classes: [] },
+    { dayOfWeek: 0, classes: [] },
+  ],
+};
+
+// The supplied current timetable is the first-run default; existing local data remains untouched.
+export const INITIAL_SCHEDULES: Schedule[] = [M5_SEMESTER_1_2569];
 
 export const DEFAULT_SETTINGS: Settings = {
   gracePeriod: 5,
@@ -125,6 +162,21 @@ export const DEFAULT_SETTINGS: Settings = {
 };
 
 export const INITIAL_SUBJECT_META: SubjectMeta = {
+    'ศิลปะ 9 / Art 9': { color: '#8B5CF6', icon: '🎨' },
+    'วิทยาศาสตร์กายภาพ 2 / Physical Science 2': { color: '#0EA5E9', icon: '🔬' },
+    'การปั้นโมเดล 3 มิติ / 3D Model Sculpting': { color: '#F97316', icon: '🗿' },
+    'แนะแนว / Guidance': { color: '#64748B', icon: '🧭' },
+    'การออกแบบและพัฒนาเกม / Game Design and Development': { color: '#EC4899', icon: '🎮' },
+    'คณิตศาสตร์ 9 / Mathematics 9': { color: '#2563EB', icon: '🧮' },
+    'อังกฤษฟัง-พูดเพื่อสื่อสาร 3 / English Listening–Speaking 3': { color: '#14B8A6', icon: '🗣️' },
+    'การงานอาชีพ (อุตสาหกรรม) / Industrial Occupations': { color: '#8B5CF6', icon: '🛠️' },
+    'ภาษาไทย 9 / Thai 9': { color: '#E11D48', icon: '🇹🇭' },
+    'การเขียนโปรแกรมคอมพิวเตอร์ 1 / Computer Programming 1': { color: '#6366F1', icon: '💻' },
+    'คณิตศาสตร์เพิ่มเติม (3) / Additional Mathematics 3': { color: '#1D4ED8', icon: '📈' },
+    'ภาษาอังกฤษ 9 / English 9': { color: '#0891B2', icon: '🇬🇧' },
+    'สังคมศึกษา ศาสนาและวัฒนธรรม 9 / Social Studies 9': { color: '#D97706', icon: '🌏' },
+    'พลศึกษา 9 / Physical Education 9': { color: '#22C55E', icon: '🏃' },
+    'สุขศึกษา 9 / Health Education 9': { color: '#22C55E', icon: '💚' },
     // General
     'Homeroom': { color: '#778899', icon: '🏠' },
     'Summer Session': { color: '#FF9500', icon: '☀️' },
