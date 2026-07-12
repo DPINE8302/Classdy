@@ -193,11 +193,9 @@ export default function App() {
           </button>
         </div>
       ) : (
-        <div className="animate-fade-in h-full">
-          <div role="tabpanel" id="panel-overview" hidden={activeTab !== 'overview'}>
-            {activeSchedule && <Overview logsWithStatus={logsWithStatus} schedules={schedules} activeSchedule={activeSchedule} settings={settings} holidays={holidays} />}
-          </div>
-          <div role="tabpanel" id="panel-dashboard" hidden={activeTab !== 'dashboard'}>
+        <div className="animate-fade-in h-full" role="tabpanel" id={`panel-${activeTab}`}>
+          {activeTab === 'overview' && activeSchedule && <Overview logsWithStatus={logsWithStatus} schedules={schedules} activeSchedule={activeSchedule} settings={settings} holidays={holidays} />}
+          {activeTab === 'dashboard' && (
             <Dashboard
               logsWithStatus={logsWithStatus}
               todayLog={todayLog}
@@ -210,27 +208,23 @@ export default function App() {
               onOpenTaskModal={handleOpenTaskModal}
               subjectMeta={subjectMeta}
             />
-          </div>
-          <div role="tabpanel" id="panel-schedule" hidden={activeTab !== 'schedule'}>
-            {activeSchedule && (
+          )}
+          {activeTab === 'schedule' && activeSchedule && (
               <ScheduleView
                 schedule={activeSchedule}
                 subjectMeta={subjectMeta}
                 onOpenTaskModal={handleOpenTaskModal}
               />
-            )}
-          </div>
-          <div role="tabpanel" id="panel-reports" hidden={activeTab !== 'reports'}>
-             {activeSchedule && <Analytics logsWithStatus={logsWithStatus} schedules={schedules} activeSchedule={activeSchedule} settings={settings} holidays={holidays} />}
-          </div>
-          <div role="tabpanel" id="panel-chat" hidden={activeTab !== 'chat'} className="h-full">
+          )}
+          {activeTab === 'reports' && activeSchedule && <Analytics logsWithStatus={logsWithStatus} schedules={schedules} activeSchedule={activeSchedule} settings={settings} holidays={holidays} />}
+          {activeTab === 'chat' && (
                 <ChatView
                   schedules={schedules}
                   subjectMeta={subjectMeta}
                   settings={settings}
                   lang="en"
                 />
-          </div>
+          )}
         </div>
     )
   );
