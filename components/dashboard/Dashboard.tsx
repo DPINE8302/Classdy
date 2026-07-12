@@ -4,7 +4,7 @@ import type { AttendanceLog, AttendanceStatus, Schedule, Settings, Holiday, Subj
 import { STATUS_MAP, formatTime, calculateLateness, calculateOnTimeStreak, getContrastingTextColor, CHART_COLORS, getScheduleForDate } from '../../lib/utils';
 import { Card } from '../shared/Card';
 import { format, startOfWeek, endOfWeek, isWithinInterval, parseISO, getDay, eachDayOfInterval, startOfDay } from 'date-fns';
-import { Edit, Award, Coffee, Meh, CheckCircle, AlertCircle, XCircle, CalendarDays, TrendingUp, ChevronRight, NotebookText } from 'lucide-react';
+import { Edit, Award, Coffee, Meh, CheckCircle, AlertCircle, XCircle, CalendarDays, TrendingUp, ChevronRight } from 'lucide-react';
 import { ResponsiveContainer, BarChart, Bar, XAxis, Tooltip, Cell } from 'recharts';
 
 

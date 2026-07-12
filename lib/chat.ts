@@ -1,11 +1,87 @@
-import { getDay, parseISO } from 'date-fns';
-import type { Schedule, SubjectMeta } from '../types';
-import { getScheduleForDate } from './utils';
 
-// --- CONSTANTS (Ported from ClassBuddy) ---
-const DAYS_OF_WEEK_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-const ENG_TO_THAI_DAY_MAP: { [key: string]: string } = { 'Monday': 'วันจันทร์', 'Tuesday': 'วันอังคาร', 'Wednesday': 'วันพุธ', 'Thursday': 'วันพฤหัสบดี', 'Friday': 'วันศุกร์', 'Saturday': 'วันเสาร์', 'Sunday': 'วันอาทิตย์' };
+
+import type { Schedule, SubjectMeta, ChatResponse } from '../types';
+import { getScheduleForDate, formatTime } from './utils';
+
+type Language = 'en' | 'th';
+
 const THAI_REGEX = /[\u0E00-\u0E7F]/;
+const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'] as const;
+
+export const translations = {
+    en: {
+        dayNames: { 'Monday': 'Monday', 'Tuesday': 'Tuesday', 'Wednesday': 'Wednesday', 'Thursday': 'Thursday', 'Friday': 'Friday', 'Saturday': 'Saturday', 'Sunday': 'Sunday' },
+        welcomeMessage: "Hi! I'm {{name}}. How can I help you with your schedule today?",
+        welcomeTitle: "Chat with {{name}}",
+        welcomeSubtitle: "I'm here to help you stay organized. Ask me anything about your schedule or tasks.",
+        inputPlaceholder: "Message {{name}}...",
+        quickQuestions: [
+            { title: "Today's Schedule", prompt: "What is my schedule for today?" },
+            { title: "Pending Homework", prompt: "Do I have any unfinished homework?" },
+            { title: "Next Class", prompt: "When is my next class?" },
+            { title: "Weekly Schedule", prompt: "Show me the full weekly schedule." },
+        ],
+        quickQuestionsHeader: "Quick Questions",
+        scheduleHeader: "Schedule for {{day}}",
+        taskHeader: "Here are your tasks:",
+        pendingTaskHeader: "Here are your pending tasks:",
+        responses: {
+            noTasksFound: "No tasks found for {{subject}} on {{day}}.",
+            noPendingTasks: "You have no pending tasks for {{subject}} on {{day}}.",
+            allTasksDone: "You're all caught up!",
+            noClassesOnDay: "You have no classes scheduled for {{day}}. Enjoy your free day! 🎉",
+            fullScheduleHeader: "Here's your weekly schedule:",
+            noClasses: "No classes!",
+            flipped: "(Flipped)",
+            cantFindSchedule: "I can't find a schedule for this week.",
+            inClassNow: "You are currently in **{{subject}}**, which ends at {{endTime}}.",
+            onBreak: "You're on a break. Your next class is **{{subject}}** at {{startTime}}.",
+            doneForToday: "You're done for today! No more classes scheduled right now.",
+            nextClassIs: "Your next class is **{{subject}}** at {{startTime}}.",
+            noMoreClasses: "You have no more classes scheduled for today.",
+            classTime: "Yes, you have **{{subject}}** on {{day}} from {{times}}.",
+            noClass: "Nope, you do not have **{{subject}}** on {{day}}.",
+            defaultFallback: "Sorry, I couldn't understand that. You can ask for a day's schedule (e.g., 'What's on Monday?'), ask about a class (e.g., 'Do I have Math today?'), or ask 'what's next?'.",
+            timeContextError: "I can only tell you what's happening 'now' or 'next' for today. For other days, please ask about the schedule in general.",
+        }
+    },
+    th: {
+        dayNames: { 'Monday': 'วันจันทร์', 'Tuesday': 'วันอังคาร', 'Wednesday': 'วันพุธ', 'Thursday': 'วันพฤหัสบดี', 'Friday': 'วันศุกร์', 'Saturday': 'วันเสาร์', 'Sunday': 'วันอาทิตย์' },
+        welcomeMessage: "สวัสดี! ฉัน {{name}} มีอะไรให้ช่วยเกี่ยวกับตารางเรียนบ้าง?",
+        welcomeTitle: "คุยกับ {{name}}",
+        welcomeSubtitle: "ให้ฉันช่วยจัดการตารางเรียนและงานต่างๆให้เป็นระเบียบนะ ถามได้ทุกเรื่องเลย",
+        inputPlaceholder: "ส่งข้อความถึง {{name}}...",
+        quickQuestions: [
+            { title: "ตารางเรียนวันนี้", prompt: "วันนี้เรียนอะไรบ้าง" },
+            { title: "การบ้านที่ค้าง", prompt: "มีงานอะไรที่ยังไม่เสร็จบ้าง" },
+            { title: "คาบต่อไป", prompt: "คาบต่อไปเรียนอะไร" },
+            { title: "ตารางเรียนทั้งสัปดาห์", prompt: "ขอดูตารางเรียนทั้งสัปดาห์หน่อย" },
+        ],
+        quickQuestionsHeader: "คำถามด่วน",
+        scheduleHeader: "ตารางเรียนสำหรับ{{day}}",
+        taskHeader: "นี่คือรายการงานของเธอ:",
+        pendingTaskHeader: "นี่คืองานที่ยังไม่เสร็จ:",
+        responses: {
+            noTasksFound: "ไม่พบงานสำหรับวิชา {{subject}} ใน{{day}}นะ",
+            noPendingTasks: "ไม่มีงานค้างสำหรับวิชา {{subject}} ใน{{day}}",
+            allTasksDone: "เยี่ยม! ทำงานเสร็จหมดแล้ว",
+            noClassesOnDay: "{{day}}ไม่มีเรียนนะ พักผ่อนได้เลย! 🎉",
+            fullScheduleHeader: "นี่คือตารางสอนทั้งสัปดาห์ของเธอ:",
+            noClasses: "ไม่มีเรียน!",
+            flipped: "(ห้องเรียนกลับด้าน)",
+            cantFindSchedule: "หาตารางเรียนของสัปดาห์นี้ไม่เจอ",
+            inClassNow: "ตอนนี้กำลังเรียนวิชา **{{subject}}** อยู่ เลิกตอน {{endTime}}",
+            onBreak: "ตอนนี้พักอยู่ คาบต่อไปเรียน **{{subject}}** ตอน {{startTime}}",
+            doneForToday: "วันนี้เรียนเสร็จแล้ว! ไม่มีคาบเรียนแล้วจ้า",
+            nextClassIs: "คาบต่อไปคือ **{{subject}}** ตอน {{startTime}}",
+            noMoreClasses: "วันนี้ไม่มีเรียนแล้ว",
+            classTime: "ใช่ มีเรียน **{{subject}}** ใน{{day}} ตอน {{times}}",
+            noClass: "ไม่มีเรียน **{{subject}}** ใน{{day}}",
+            defaultFallback: "ขอโทษนะ ไม่เข้าใจที่ถามเลย ลองถามเกี่ยวกับตารางเรียนดูสิ เช่น 'วันจันทร์เรียนอะไร?', 'มีเรียนคณิตไหม?', หรือ 'คาบต่อไปเรียนอะไร?'",
+            timeContextError: "บอกได้แค่ว่า 'ตอนนี้' หรือ 'คาบต่อไป' เรียนอะไรสำหรับวันนี้เท่านั้นนะ ถ้าอยากรู้วันอื่น ให้ถามตารางเรียนโดยรวมมาเลย",
+        }
+    }
+};
 
 const DAY_KEYWORD_MAP: { [key: string]: string } = {
     'monday': 'Monday', 'mon': 'Monday', 'วันจันทร์': 'Monday', 'จันทร์': 'Monday',
@@ -20,30 +96,34 @@ const DAY_KEYWORD_MAP: { [key: string]: string } = {
     'yesterday': 'yesterday', 'เมื่อวาน': 'yesterday',
 };
 
-const TIME_CONTEXT_MAP: { [key: string]: { start: string, end: string, eng: string, thai: string } } = {
-    'morning': { start: '00:00', end: '12:00', eng: 'morning', thai: 'ตอนเช้า' },
-    'ตอนเช้า': { start: '00:00', end: '12:00', eng: 'morning', thai: 'ตอนเช้า' },
-    'afternoon': { start: '12:00', end: '17:00', eng: 'afternoon', thai: 'ตอนบ่าย' },
-    'ตอนบ่าย': { start: '12:00', end: '17:00', eng: 'afternoon', thai: 'ตอนบ่าย' },
-    'evening': { start: '17:00', end: '24:00', eng: 'evening', thai: 'ตอนเย็น' },
-    'ตอนเย็น': { start: '17:00', end: '24:00', eng: 'evening', thai: 'ตอนเย็น' },
+const TIME_CONTEXT_MAP: { [key: string]: { start: string, end: string } } = {
+    'morning': { start: '00:00', end: '12:00' }, 'ตอนเช้า': { start: '00:00', end: '12:00' },
+    'afternoon': { start: '12:00', end: '17:00' }, 'ตอนบ่าย': { start: '12:00', end: '17:00' },
+    'evening': { start: '17:00', end: '24:00' }, 'ตอนเย็น': { start: '17:00', end: '24:00' },
 };
 
-// --- MAIN PROCESSING FUNCTION ---
-export const processQuestion = (query: string, schedules: Schedule[], subjectMeta: SubjectMeta): string => {
+export const processQuestion = (query: string, schedules: Schedule[], subjectMeta: SubjectMeta, _uiLang: Language): ChatResponse => {
     const lowerQuery = query.toLowerCase().trim().replace(/[?.,]/g, '');
     const isThaiQuery = THAI_REGEX.test(lowerQuery);
+    const responseLang = isThaiQuery ? 'th' : _uiLang;
+    const t = translations[responseLang];
+    
     const now = new Date();
-    const todayName = DAYS_OF_WEEK_NAMES[now.getDay()];
+    const todayName = DAYS[now.getDay()];
     const nowTime = now.toTimeString().substring(0, 5);
 
-    const getResponse = (eng: string, thai: string) => isThaiQuery ? thai : eng;
+    const getResponseText = (key: keyof typeof t.responses, replacements: Record<string, string> = {}): ChatResponse => {
+        let text = t.responses[key] || translations.en.responses[key as keyof typeof translations.en.responses];
+        for (const [k, v] of Object.entries(replacements)) {
+            text = text.replace(`{{${k}}}`, v);
+        }
+        return { type: 'text', payload: text };
+    };
 
     const buildSubjectKeywordMap = () => {
         const map: { [key: string]: string } = {};
         for (const subject of Object.keys(subjectMeta)) {
             map[subject.toLowerCase()] = subject;
-            // Add common Thai/English variations if possible (this is a simplification)
             if (subject.includes('(')) {
                  map[subject.split('(')[0].trim().toLowerCase()] = subject;
             }
@@ -52,7 +132,6 @@ export const processQuestion = (query: string, schedules: Schedule[], subjectMet
     };
     const SUBJECT_KEYWORD_MAP = buildSubjectKeywordMap();
 
-    // --- NLP HELPER FUNCTIONS ---
     const extractTimeContext = () => {
         for (const [keyword, context] of Object.entries(TIME_CONTEXT_MAP)) {
             if (lowerQuery.includes(keyword)) return context;
@@ -64,8 +143,8 @@ export const processQuestion = (query: string, schedules: Schedule[], subjectMet
         for (const [keyword, day] of Object.entries(DAY_KEYWORD_MAP)) {
             if (lowerQuery.includes(keyword)) {
                 if (day === 'today') return todayName;
-                if (day === 'tomorrow') return DAYS_OF_WEEK_NAMES[(now.getDay() + 1) % 7];
-                if (day === 'yesterday') return DAYS_OF_WEEK_NAMES[(now.getDay() + 6) % 7];
+                if (day === 'tomorrow') return DAYS[(now.getDay() + 1) % 7];
+                if (day === 'yesterday') return DAYS[(now.getDay() + 6) % 7];
                 return day;
             }
         }
@@ -73,7 +152,6 @@ export const processQuestion = (query: string, schedules: Schedule[], subjectMet
     };
 
     const extractSubject = () => {
-        // Iterate in reverse to match longer names first
         const sortedKeywords = Object.keys(SUBJECT_KEYWORD_MAP).sort((a,b) => b.length - a.length);
         for (const keyword of sortedKeywords) {
             if (lowerQuery.includes(keyword)) return SUBJECT_KEYWORD_MAP[keyword];
@@ -87,13 +165,13 @@ export const processQuestion = (query: string, schedules: Schedule[], subjectMet
         const targetDayName = extractDay();
         const targetSubject = extractSubject();
         const isUnfinishedQuery = lowerQuery.includes('unfinished') || lowerQuery.includes('pending') || lowerQuery.includes('ยังไม่เสร็จ');
-        let tasksFound: { day: string, subject: string, text: string, completed: boolean }[] = [];
+        const tasksFound: { day: string, subject: string, text: string, completed: boolean }[] = [];
 
-        const daysToSearch = targetDayName ? [targetDayName] : DAYS_OF_WEEK_NAMES.slice(1, 6); // Mon-Fri if no day specified
+        const daysToSearch = targetDayName ? [targetDayName] : DAYS.slice(1, 6);
 
         schedules.forEach(schedule => {
             schedule.rules.forEach(rule => {
-                const dayName = DAYS_OF_WEEK_NAMES[rule.dayOfWeek];
+                const dayName = DAYS[rule.dayOfWeek];
                 if (!daysToSearch.includes(dayName)) return;
 
                 rule.classes.forEach(cls => {
@@ -109,41 +187,17 @@ export const processQuestion = (query: string, schedules: Schedule[], subjectMet
         });
 
         if (tasksFound.length === 0) {
-            let responseEng = isUnfinishedQuery ? "You have no pending tasks" : "No tasks found";
-            let responseThai = isUnfinishedQuery ? "ไม่มีงานค้างเลย" : "ไม่พบงาน";
-            if (targetSubject) {
-                responseEng += ` for ${targetSubject}`;
-                responseThai += `สำหรับวิชา ${targetSubject}`;
-            }
-            if (targetDayName) {
-                responseEng += ` on ${targetDayName}`;
-                responseThai += `ใน${ENG_TO_THAI_DAY_MAP[targetDayName] || targetDayName}`;
-            }
-            return getResponse(responseEng + ".", responseThai + "นะ");
+            const replacements = { subject: targetSubject || 'any subject', day: targetDayName || 'any day' };
+            return getResponseText(isUnfinishedQuery ? 'noPendingTasks' : 'noTasksFound', replacements);
         }
-
-        let response = getResponse("Here are your tasks:", "นี่คือรายการงานของเธอ:");
-        const groupedTasks = tasksFound.reduce((acc, task) => {
-            const key = `${task.day} - ${task.subject}`;
-            if (!acc[key]) {
-                acc[key] = { day: task.day, subject: task.subject, tasks: [] };
+        
+        return {
+            type: 'tasks',
+            payload: {
+                title: isUnfinishedQuery ? t.pendingTaskHeader : t.taskHeader,
+                tasks: tasksFound,
             }
-            acc[key].tasks.push(task);
-            return acc;
-        }, {} as any);
-
-        for (const groupKey in groupedTasks) {
-            const group = groupedTasks[groupKey];
-            const dayDisplay = getResponse(group.day, ENG_TO_THAI_DAY_MAP[group.day]);
-            const icon = subjectMeta[group.subject]?.icon || '📚';
-            const iconHtml = `${icon} `;
-            response += `\n\n**${iconHtml}${group.subject} (${dayDisplay})**`;
-            group.tasks.forEach((task: any) => {
-                const status = task.completed ? getResponse(' (Done)', ' (เสร็จแล้ว)') : '';
-                response += `\n- ${task.text}${isUnfinishedQuery ? '' : status}`;
-            });
-        }
-        return response;
+        };
     }
 
     // --- SCHEDULE INTENT ---
@@ -151,8 +205,8 @@ export const processQuestion = (query: string, schedules: Schedule[], subjectMet
     const targetSubject = extractSubject();
     const timeContext = extractTimeContext();
     const dayToQueryName = targetDayName || todayName;
-    const dayToQueryIndex = DAYS_OF_WEEK_NAMES.indexOf(dayToQueryName);
-    const dayDisplay = isThaiQuery ? ENG_TO_THAI_DAY_MAP[dayToQueryName] : dayToQueryName;
+    const dayToQueryIndex = DAYS.indexOf(dayToQueryName as typeof DAYS[number]);
+    const dayDisplay = t.dayNames[dayToQueryName as keyof typeof t.dayNames];
 
     const referenceDate = new Date();
     if (targetDayName) {
@@ -167,66 +221,65 @@ export const processQuestion = (query: string, schedules: Schedule[], subjectMet
     if (timeContext) {
         dayClasses = dayClasses.filter(c => c.startTime >= timeContext.start && c.startTime < timeContext.end);
         if (dayClasses.length === 0) {
-            return getResponse(`You have no classes in the ${timeContext.eng} on ${dayToQueryName}.`, `ไม่มีเรียน${timeContext.thai}ใน${dayDisplay}`);
+            return getResponseText('noClassesOnDay', { day: dayDisplay });
         }
     }
 
     if (lowerQuery.includes('full schedule') || lowerQuery.includes('weekly schedule') || lowerQuery.includes('all week') || lowerQuery.includes('ทั้งสัปดาห์') || lowerQuery.includes('ทั้งอาทิตย์')) {
-        let fullScheduleStr = getResponse("Here's your weekly schedule:", "นี่คือตารางสอนทั้งสัปดาห์ของเธอ:");
+        let fullScheduleStr = `<strong>${t.responses.fullScheduleHeader}</strong><br/>`;
         const scheduleToUse = getScheduleForDate(new Date(), schedules);
-        if (!scheduleToUse) return "I can't find a schedule for this week.";
+        if (!scheduleToUse) return getResponseText('cantFindSchedule');
 
-        for (const dayName of DAYS_OF_WEEK_NAMES.slice(1, 6)) {
-            const dayIndex = DAYS_OF_WEEK_NAMES.indexOf(dayName);
+        for (const dayName of DAYS.slice(1, 6)) {
+            const dayIndex = DAYS.indexOf(dayName);
             const classes = scheduleToUse.rules.find(r => r.dayOfWeek === dayIndex)?.classes || [];
-            fullScheduleStr += `\n\n**${getResponse(dayName, ENG_TO_THAI_DAY_MAP[dayName])}**`;
+            fullScheduleStr += `<br/><strong>${t.dayNames[dayName as keyof typeof t.dayNames]}</strong>`;
             if (classes.length === 0) {
-                fullScheduleStr += getResponse(`\n- No classes!`, `\n- ไม่มีเรียน!`);
+                fullScheduleStr += `<br/>- ${t.responses.noClasses}`;
             } else {
                 classes.forEach(c => {
                     const icon = subjectMeta[c.subject]?.icon || '📚';
-                    fullScheduleStr += `\n- ${icon} ${c.subject} (${c.startTime} - ${c.endTime})${c.isOnline ? ' (Flipped)' : ''}`;
+                    fullScheduleStr += `<br/>- ${icon} ${c.subject} (${formatTime(c.startTime)} - ${formatTime(c.endTime)})${c.isOnline ? ` ${t.responses.flipped}` : ''}`;
                 });
             }
         }
-        return fullScheduleStr;
+        return { type: 'text', payload: fullScheduleStr };
     }
 
     if (lowerQuery.includes('now') || lowerQuery.includes('ตอนนี้')) {
-        if(dayToQueryName !== todayName) return getResponse(`I can only tell you what's happening 'now' for today. For ${dayToQueryName}, please ask about a specific time.`, `บอกได้แค่ว่า 'ตอนนี้' เรียนอะไรสำหรับวันนี้เท่านั้นนะ ถ้าอยากรู้วันอื่น ให้ถามเวลาเจาะจงมาเลย`);
+        if(dayToQueryName !== todayName) return getResponseText('timeContextError');
         const currentClass = dayClasses.find(c => nowTime >= c.startTime && nowTime < c.endTime);
-        if(currentClass) return getResponse(`You are currently in **${currentClass.subject}**, which ends at ${currentClass.endTime}.`, `ตอนนี้กำลังเรียนวิชา **${currentClass.subject}** อยู่ เลิกตอน ${currentClass.endTime}`);
+        if(currentClass) return getResponseText('inClassNow', {subject: currentClass.subject, endTime: formatTime(currentClass.endTime)});
         const nextClass = dayClasses.find(c => c.startTime > nowTime);
-        if(nextClass) return getResponse(`You're on a break. Your next class is **${nextClass.subject}** at ${nextClass.startTime}.`, `ตอนนี้พักอยู่ คาบต่อไปเรียน **${nextClass.subject}** ตอน ${nextClass.startTime}`);
-        return getResponse(`You're done for today! No more classes scheduled right now.`, `วันนี้เรียนเสร็จแล้ว! ไม่มีคาบเรียนแล้วจ้า`);
+        if(nextClass) return getResponseText('onBreak', {subject: nextClass.subject, startTime: formatTime(nextClass.startTime)});
+        return getResponseText('doneForToday');
     }
 
     if ((lowerQuery.includes('next') || lowerQuery.includes('ถัดไป') || lowerQuery.includes('ต่อไป')) && !targetSubject) {
-        if(dayToQueryName !== todayName) return getResponse(`I can only tell you the 'next' class for today.`, `บอก 'คาบต่อไป' ได้สำหรับวันนี้เท่านั้นนะ`);
+        if(dayToQueryName !== todayName) return getResponseText('timeContextError');
         const nextClass = dayClasses.find(c => c.startTime > nowTime);
-        return nextClass ? getResponse(`Your next class is **${nextClass.subject}** at ${nextClass.startTime}.`, `คาบต่อไปคือ **${nextClass.subject}** ตอน ${nextClass.startTime}`) : getResponse(`You have no more classes scheduled for today.`, `วันนี้ไม่มีเรียนแล้ว`);
+        return nextClass ? getResponseText('nextClassIs', {subject: nextClass.subject, startTime: formatTime(nextClass.startTime)}) : getResponseText('noMoreClasses');
     }
 
     if (targetSubject) {
         const classesOnDay = dayClasses.filter(c => c.subject === targetSubject);
         if (classesOnDay.length > 0) {
-            const times = classesOnDay.map(c => `${c.startTime} - ${c.endTime}`).join(' and ');
-            return getResponse(`Yes, you have **${targetSubject}** on ${dayToQueryName} from ${times}.`, `ใช่ มีเรียน **${targetSubject}** ใน${dayDisplay} ตอน ${times}`);
+            const times = classesOnDay.map(c => `${formatTime(c.startTime)} - ${formatTime(c.endTime)}`).join(' and ');
+            return getResponseText('classTime', {subject: targetSubject, day: dayDisplay, times});
         }
-        return getResponse(`Nope, you do not have **${targetSubject}** on ${dayToQueryName}.`, `ไม่มีเรียน **${targetSubject}** ใน${dayDisplay}`);
+        return getResponseText('noClass', {subject: targetSubject, day: dayDisplay});
     }
 
     if (targetDayName) {
-        if (dayClasses.length === 0) return getResponse(`You have no classes scheduled for ${targetDayName}. Enjoy your free day! 🎉`, `${dayDisplay}ไม่มีเรียนนะ พักผ่อนได้เลย! 🎉`);
-        const classList = dayClasses.map(c => {
-            const icon = subjectMeta[c.subject]?.icon || '📚';
-            return `\n- ${icon} **${c.subject}** (${c.startTime} - ${c.endTime})`
-        }).join('');
-        return getResponse(`On ${targetDayName}, your schedule is:${classList}`, `ตารางเรียน${dayDisplay}คือ:${classList}`);
+        if (dayClasses.length === 0) return getResponseText('noClassesOnDay', { day: dayDisplay });
+        return {
+            type: 'schedule',
+            payload: {
+                dayName: dayDisplay,
+                classes: dayClasses,
+            }
+        };
     }
 
-    return getResponse(
-        "Sorry, I couldn't understand that. You can ask for a day's schedule (e.g., 'What's on Monday?'), ask about a class (e.g., 'Do I have Math today?'), or ask 'what's next?'.",
-        "ขอโทษนะ ไม่เข้าใจที่ถามเลย ลองถามเกี่ยวกับตารางเรียนดูสิ เช่น 'วันจันทร์เรียนอะไร?', 'มีเรียนคณิตไหม?', หรือ 'คาบต่อไปเรียนอะไร?'"
-    );
+    return getResponseText('defaultFallback');
 };

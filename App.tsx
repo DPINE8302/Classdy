@@ -4,7 +4,7 @@
 
 
 
-import React, { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useAppData } from './hooks/useAppData';
 import { Dashboard } from './components/dashboard/Dashboard';
 import { Analytics } from './components/analytics/Analytics';
@@ -12,15 +12,15 @@ import { Settings } from './components/Settings';
 import { AddLogModal } from './components/AddLogModal';
 import { ScheduleView } from './components/schedule/ScheduleView';
 import { Settings as SettingsIcon, LayoutGrid, ListChecks, AreaChart, BarChartHorizontal, MessageCircle, Plus } from 'lucide-react';
-import type { AttendanceLog, Settings as SettingsType, DayOfWeek, Schedule } from './types';
+import type { AttendanceLog, Settings as SettingsType, DayOfWeek } from './types';
 import { getGreeting, applyTheme, getScheduleForDate, getStatus } from './lib/utils';
 import { TaskModal } from './components/TaskModal';
 import { Overview } from './components/analytics/Overview';
-import { ChatWidget } from './components/ChatWidget';
 import { useMediaQuery } from './hooks/useMediaQuery';
 import { DesktopNav } from './components/layout/DesktopNav';
 import { MobileNav } from './components/layout/MobileNav';
 import { ChatView } from './components/ChatView';
+import { Onboarding } from './components/Onboarding';
 
 type Tab = 'overview' | 'dashboard' | 'schedule' | 'reports' | 'chat';
 
@@ -60,7 +60,6 @@ export default function App() {
   const [notificationMessage, setNotificationMessage] = useState<{id: number, message: string} | null>(null);
   
   const isDesktop = useMediaQuery('(min-width: 768px)');
-
 
   // Apply theme and check for first-time setup
   useEffect(() => {
@@ -103,7 +102,7 @@ export default function App() {
         const todaySchedule = todayRule.classes.filter(c => c.startTime && c.endTime);
 
         const notifiedClassesKey = `notified-${now.getFullYear()}-${now.getMonth()}-${now.getDate()}`;
-        let notifiedToday = JSON.parse(sessionStorage.getItem(notifiedClassesKey) || '[]');
+        const notifiedToday = JSON.parse(sessionStorage.getItem(notifiedClassesKey) || '[]');
 
         const timeToDate = (timeStr: string) => {
             const [h, m] = timeStr.split(':').map(Number);
@@ -179,6 +178,8 @@ export default function App() {
 
   const todayStatus = todayLog?.status || getStatus(new Date().toISOString().split('T')[0], null, schedules, settings.gracePeriod, holidays);
 
+  if (schedules.length === 0) return <Onboarding onComplete={saveSchedule} />;
+
   const renderContent = () => (
     schedules.length === 0 ? (
         <div className="text-center py-20 bg-white dark:bg-zinc-800/50 rounded-2xl shadow-soft">
@@ -223,19 +224,12 @@ export default function App() {
              {activeSchedule && <Analytics logsWithStatus={logsWithStatus} schedules={schedules} activeSchedule={activeSchedule} settings={settings} holidays={holidays} />}
           </div>
           <div role="tabpanel" id="panel-chat" hidden={activeTab !== 'chat'} className="h-full">
-              {isDesktop ? (
                 <ChatView
                   schedules={schedules}
                   subjectMeta={subjectMeta}
                   settings={settings}
+                  lang="en"
                 />
-              ) : (
-                <ChatWidget 
-                  schedules={schedules} 
-                  subjectMeta={subjectMeta}
-                  settings={settings}
-                />
-              )}
           </div>
         </div>
     )

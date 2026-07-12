@@ -63,6 +63,8 @@ export const Timeline: React.FC<TimelineProps> = ({ rule, subjectMeta, onOpenTas
         updateCurrentTimeIndicator();
         const interval = setInterval(updateCurrentTimeIndicator, 60000); // Update every minute
         return () => clearInterval(interval);
+    // The updater is local; its complete primitive inputs are listed here.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [rule.dayOfWeek, timelineStartHour, timelineTotalHours]);
 
 

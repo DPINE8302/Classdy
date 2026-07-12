@@ -6,6 +6,8 @@ import { ACCENT_COLORS, PALETTE } from '../constants';
 import { ScheduleEditor } from './analytics/ScheduleEditor';
 import { SlidersHorizontal, Palette, Calendar, Database, Trash2, Edit, Plus, Bell } from 'lucide-react';
 import { SubjectManager } from './shared/SubjectManager';
+import { duplicateSchedule, localDateKey } from '../lib/domain';
+import { DATA_VERSION, parseBackup } from '../lib/persistence';
 
 interface SettingsProps {
   isOpen: boolean;
@@ -266,6 +268,7 @@ const SchedulesSettings: React.FC<Omit<SettingsProps, 'isOpen' | 'onClose'>> = (
                             </p>
                         </div>
                         <div className="flex gap-2">
+                             <button aria-label={`Duplicate ${schedule.name}`} onClick={() => onSaveSchedule(duplicateSchedule(schedule, `schedule-${Date.now()}`))} className="px-2 text-xs font-semibold text-zinc-500 hover:text-primary">Duplicate</button>
                              <button onClick={() => setEditingScheduleId(schedule.id)} className="p-2 text-zinc-500 hover:text-primary rounded-md"><Edit size={16}/></button>
                              <button onClick={() => handleDelete(schedule.id)} className="p-2 text-zinc-500 hover:text-danger rounded-md"><Trash2 size={16}/></button>
                         </div>
@@ -284,6 +287,8 @@ const DataSettings: React.FC<Omit<SettingsProps, 'isOpen'|'onClose'>> = (props) 
     const exportData = () => {
         try {
             const data = {
+                version: DATA_VERSION,
+                exportedAt: new Date().toISOString(),
                 settings: props.settings,
                 schedules: props.schedules,
                 logs: props.logs,
@@ -292,10 +297,10 @@ const DataSettings: React.FC<Omit<SettingsProps, 'isOpen'|'onClose'>> = (props) 
             const jsonString = `data:text/json;charset=utf-8,${encodeURIComponent(JSON.stringify(data, null, 2))}`;
             const link = document.createElement('a');
             link.href = jsonString;
-            link.download = `classdy_backup_${new Date().toISOString().split('T')[0]}.json`;
+            link.download = `classdy_backup_${localDateKey(new Date())}.json`;
             link.click();
             props.onShowMessage("Data exported successfully!");
-        } catch(e) {
+        } catch {
             props.onShowMessage("Error exporting data.");
         }
     };
@@ -309,7 +314,7 @@ const DataSettings: React.FC<Omit<SettingsProps, 'isOpen'|'onClose'>> = (props) 
             try {
                 const text = e.target?.result;
                 if (typeof text !== 'string') throw new Error("File could not be read");
-                const data = JSON.parse(text);
+                const data = parseBackup(JSON.parse(text));
 
                 if (window.confirm("This will overwrite ALL current application data (schedules, logs, and settings). This cannot be undone. Are you sure?")) {
                     if (data.settings) props.onSaveSettings(data.settings);
@@ -344,6 +349,7 @@ const DataSettings: React.FC<Omit<SettingsProps, 'isOpen'|'onClose'>> = (props) 
                         <input type="file" accept=".json" className="hidden" onChange={importData} />
                     </label>
                 </div>
+                <button onClick={() => { if (window.confirm('Reset all Classdy data? Export a backup first if needed.')) { Object.keys(localStorage).filter((key) => key.startsWith('classdy-')).forEach((key) => localStorage.removeItem(key)); window.location.reload(); } }} className="mt-6 w-full rounded-lg bg-danger/10 p-2.5 font-semibold text-danger">Reset all local data</button>
             </div>
         </Section>
     );

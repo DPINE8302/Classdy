@@ -5,6 +5,7 @@ export interface Task {
   id: string;
   text: string;
   completed: boolean;
+  dueDate?: string;
 }
 
 export interface ClassSession {
@@ -14,6 +15,9 @@ export interface ClassSession {
   endTime: string; // HH:mm
   tasks: Task[];
   isOnline?: boolean;
+  room?: string;
+  teacher?: string;
+  notes?: string;
 }
 
 export interface ScheduleRule {
@@ -48,6 +52,9 @@ export interface AttendanceLog {
   arrivalTime: string | null; // HH:mm
   departureTime: string | null; // HH:mm
   statusTag?: 'Absent' | 'Holiday';
+  scheduleId?: string;
+  classId?: string;
+  manualStatus?: AttendanceStatus;
 }
 
 export type AttendanceStatus = 'ON_TIME' | 'LATE' | 'EARLY' | 'DAY_OFF' | 'ABSENT' | 'HOLIDAY' | 'NO_ENTRY' | 'NO_SCHEDULE';
@@ -56,3 +63,8 @@ export type SubjectMeta = Record<string, {
     color: string;
     icon?: string;
 }>;
+
+export interface InteractiveSchedulePayload { dayName: string; classes: ClassSession[] }
+export interface InteractiveTask { day: string; subject: string; text: string; completed: boolean }
+export interface InteractiveTasksPayload { title: string; tasks: InteractiveTask[] }
+export type ChatResponse = { type: 'text'; payload: string } | { type: 'schedule'; payload: InteractiveSchedulePayload } | { type: 'tasks'; payload: InteractiveTasksPayload };

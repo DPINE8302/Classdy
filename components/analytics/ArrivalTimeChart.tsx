@@ -15,7 +15,7 @@ interface ArrivalTimeChartProps {
 
 const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
-        const { arrivalTime, requiredTime, graceTime, status, lateness } = payload[0].payload;
+        const { arrivalTime, requiredTime, graceTime, status, lateness } = payload[0].payload as { arrivalTime: number; requiredTime: number; graceTime: number; status: AttendanceStatus; lateness: number };
         
         let statusText = STATUS_MAP[status].text;
         let statusColor = CHART_COLORS.onTime; 

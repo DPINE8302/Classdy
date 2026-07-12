@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import type { Schedule, ScheduleRule, ClassSession, SubjectMeta, DayOfWeek } from '../../types';
 import { DAYS_OF_WEEK } from '../../constants';
 import { Plus, Trash2 } from 'lucide-react';
+import { overlaps } from '../../lib/domain';
 
 interface ScheduleEditorProps {
     schedule: Schedule;
@@ -17,6 +18,7 @@ const labelClasses = "block text-sm font-medium text-zinc-700 dark:text-zinc-300
 export const ScheduleEditor: React.FC<ScheduleEditorProps> = ({ schedule, onSave, onCancel, subjectMeta }) => {
     const [editedSchedule, setEditedSchedule] = useState<Schedule>(JSON.parse(JSON.stringify(schedule)));
     const [allSubjects, setAllSubjects] = useState<string[]>([]);
+    const [error, setError] = useState('');
     
     useEffect(() => {
         const subjects = new Set<string>();
@@ -40,6 +42,13 @@ export const ScheduleEditor: React.FC<ScheduleEditorProps> = ({ schedule, onSave
     };
 
     const handleSave = () => {
+        if (!editedSchedule.name.trim()) return setError('Give this schedule a name.');
+        if (editedSchedule.startDate && editedSchedule.endDate && editedSchedule.endDate < editedSchedule.startDate) return setError('End date must be after the start date.');
+        for (const rule of editedSchedule.rules) {
+            if (rule.classes.some((item) => !item.subject.trim() || item.endTime <= item.startTime)) return setError('Every class needs a subject and an end time after its start time.');
+            if (overlaps(rule.classes).length) return setError('Overlapping classes were found. Adjust the times before saving.');
+        }
+        setError('');
         onSave(editedSchedule);
     };
 
@@ -74,6 +83,7 @@ export const ScheduleEditor: React.FC<ScheduleEditorProps> = ({ schedule, onSave
             </div>
 
             <div className="flex justify-end gap-3 pt-4 border-t border-zinc-200 dark:border-zinc-700">
+                 {error ? <p role="alert" className="mr-auto text-sm text-danger">{error}</p> : null}
                  <button onClick={onCancel} className="rounded-lg border-none bg-zinc-200 dark:bg-zinc-700 py-2 px-4 text-sm font-medium text-zinc-800 dark:text-zinc-200 shadow-sm hover:bg-zinc-300 dark:hover:bg-zinc-600">Cancel</button>
                  <button onClick={handleSave} className="inline-flex justify-center rounded-lg border border-transparent bg-primary px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary-hover">Save Schedule</button>
             </div>
@@ -92,7 +102,7 @@ interface DayEditorProps {
 const DayEditor: React.FC<DayEditorProps> = ({ day, rule, onChange, allSubjects, setAllSubjects }) => {
     const handleClassChange = (index: number, field: keyof ClassSession, value: string | boolean) => {
         const newClasses = [...rule.classes];
-        (newClasses[index] as any)[field] = value;
+        newClasses[index] = { ...newClasses[index], [field]: value };
         onChange(rule.dayOfWeek, newClasses);
 
         if (field === 'subject' && typeof value === 'string' && value.trim() && !allSubjects.includes(value)) {
@@ -115,8 +125,8 @@ const DayEditor: React.FC<DayEditorProps> = ({ day, rule, onChange, allSubjects,
             <h4 className="font-semibold mb-3 text-zinc-800 dark:text-zinc-200">{day}</h4>
             <div className="space-y-3">
                 {rule.classes.map((cls, index) => (
-                    <div key={cls.id || index} className="grid grid-cols-1 sm:grid-cols-10 gap-2 items-center">
-                        <div className="sm:col-span-3">
+                    <div key={cls.id || index} className="grid grid-cols-1 sm:grid-cols-12 gap-2 items-center">
+                        <div className="sm:col-span-4">
                             <label className="text-xs sr-only">Subject</label>
                              <input 
                                 type="text"
@@ -135,7 +145,7 @@ const DayEditor: React.FC<DayEditorProps> = ({ day, rule, onChange, allSubjects,
                              <label className="text-xs sr-only">End Time</label>
                             <input type="time" value={cls.endTime} onChange={(e) => handleClassChange(index, 'endTime', e.target.value)} className={inputClasses} style={{colorScheme: 'dark'}}/>
                         </div>
-                         <div className="sm:col-span-2 flex items-center justify-start sm:justify-center">
+                         <div className="sm:col-span-1 flex items-center justify-start sm:justify-center">
                             <input
                                 type="checkbox"
                                 id={`online-${cls.id}`}
@@ -148,6 +158,9 @@ const DayEditor: React.FC<DayEditorProps> = ({ day, rule, onChange, allSubjects,
                         <div className="sm:col-span-1 flex justify-end">
                             <button onClick={() => removeClass(index)} className="p-2 text-zinc-500 hover:text-danger rounded-md"><Trash2 size={16}/></button>
                         </div>
+                        <input aria-label={`Room for ${cls.subject || day}`} placeholder="Room" value={cls.room || ''} onChange={(e) => handleClassChange(index, 'room', e.target.value)} className={`${inputClasses} sm:col-span-3`} />
+                        <input aria-label={`Teacher for ${cls.subject || day}`} placeholder="Teacher" value={cls.teacher || ''} onChange={(e) => handleClassChange(index, 'teacher', e.target.value)} className={`${inputClasses} sm:col-span-3`} />
+                        <input aria-label={`Notes for ${cls.subject || day}`} placeholder="Optional notes" value={cls.notes || ''} onChange={(e) => handleClassChange(index, 'notes', e.target.value)} className={`${inputClasses} sm:col-span-6`} />
                     </div>
                 ))}
                  <datalist id="subjects-datalist">

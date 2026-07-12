@@ -1,7 +1,7 @@
 
 import { useMemo, useCallback } from 'react';
 import { useLocalStorage } from './useLocalStorage';
-import type { Settings, Schedule, AttendanceLog, Holiday, SubjectMeta, Task, DayOfWeek } from '../types';
+import type { Settings, Schedule, AttendanceLog, SubjectMeta, Task, DayOfWeek } from '../types';
 import { DEFAULT_SETTINGS, INITIAL_SCHEDULES, INITIAL_LOGS, INITIAL_SUBJECT_META } from '../constants';
 import { THAI_HOLIDAYS_2025 } from '../holidays';
 import { parseISO } from 'date-fns';

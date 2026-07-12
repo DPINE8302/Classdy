@@ -18,6 +18,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, schedule,
     const [currentClass, setCurrentClass] = useState<ClassSession | null>(null);
     const [tasks, setTasks] = useState<Task[]>([]);
     const [newTaskText, setNewTaskText] = useState('');
+    const [newTaskDueDate, setNewTaskDueDate] = useState('');
 
     useEffect(() => {
         if (isOpen) {
@@ -41,11 +42,13 @@ export const TaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, schedule,
             id: `task-${Date.now()}`,
             text: newTaskText.trim(),
             completed: false,
+            dueDate: newTaskDueDate || undefined,
         };
         const updatedTasks = [...tasks, newTask];
         setTasks(updatedTasks);
         onUpdateTasks(schedule.id, dayOfWeek, classId, updatedTasks);
         setNewTaskText('');
+        setNewTaskDueDate('');
     };
 
     const handleToggleTask = (taskId: string) => {
@@ -85,7 +88,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, schedule,
                                 className="h-5 w-5 rounded border-zinc-300 text-primary focus:ring-primary"
                             />
                             <label htmlFor={`task-${task.id}`} className={`flex-1 text-sm ${task.completed ? 'line-through text-zinc-500' : 'text-zinc-800 dark:text-zinc-200'}`}>
-                                {task.text}
+                                {task.text}{task.dueDate ? <span className="block text-xs text-zinc-500">Due {task.dueDate}</span> : null}
                             </label>
                             <button onClick={() => handleDeleteTask(task.id)} className="text-zinc-400 hover:text-danger opacity-0 group-hover:opacity-100 transition-opacity">
                                 <Trash2 size={16} />
@@ -96,7 +99,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, schedule,
                     )}
                 </div>
 
-                <div className="flex gap-2 pt-4 border-t border-zinc-200 dark:border-zinc-700">
+                <div className="grid gap-2 pt-4 border-t border-zinc-200 dark:border-zinc-700 sm:grid-cols-[1fr_auto_auto]">
                     <input
                         type="text"
                         value={newTaskText}
@@ -105,6 +108,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, schedule,
                         placeholder="Add a new task..."
                         className="flex-grow w-full rounded-lg border-zinc-300 dark:border-zinc-600 bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 shadow-sm focus:border-primary focus:ring-1 focus:ring-primary sm:text-sm"
                     />
+                    <input type="date" aria-label="Due date (optional)" value={newTaskDueDate} onChange={(e) => setNewTaskDueDate(e.target.value)} className="rounded-lg border-zinc-300 bg-zinc-100 text-sm dark:border-zinc-600 dark:bg-zinc-800" />
                     <button
                         onClick={handleAddTask}
                         className="inline-flex items-center justify-center rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary-hover focus:outline-none"

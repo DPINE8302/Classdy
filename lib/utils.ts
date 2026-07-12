@@ -23,7 +23,7 @@ export function getScheduleForDate(date: Date, schedules: Schedule[]): Schedule 
             const endDate = parseISO(s.endDate);
             endDate.setHours(23, 59, 59, 999);
             return isWithinInterval(referenceDate, { start: startDate, end: endDate });
-        } catch (e) {
+        } catch {
             console.error("Invalid date format in schedule:", s);
             return false;
         }
@@ -235,10 +235,10 @@ export function getGreeting(): string {
 }
 
 const adjustColor = (hex: string, amount: number) => {
-    let color = parseInt(hex.slice(1), 16);
-    let r = Math.min(255, Math.max(0, (color >> 16) + amount));
-    let g = Math.min(255, Math.max(0, ((color >> 8) & 0x00FF) + amount));
-    let b = Math.min(255, Math.max(0, (color & 0x0000FF) + amount));
+    const color = parseInt(hex.slice(1), 16);
+    const r = Math.min(255, Math.max(0, (color >> 16) + amount));
+    const g = Math.min(255, Math.max(0, ((color >> 8) & 0x00FF) + amount));
+    const b = Math.min(255, Math.max(0, (color & 0x0000FF) + amount));
     return `#${(b | (g << 8) | (r << 16)).toString(16).padStart(6, '0')}`;
 };
 
@@ -269,7 +269,7 @@ export function getContrastingTextColor(hex: string | undefined): string {
       const b = parseInt(hex.slice(5, 7), 16);
       const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
       return luminance > 0.5 ? '#000000' : '#ffffff';
-    } catch (e) {
+    } catch {
       return '#ffffff';
     }
 }

@@ -191,13 +191,13 @@ const PunctualityPieChart: React.FC<{ data: any[] }> = ({ data }) => {
                                 fill="#8884d8" 
                                 paddingAngle={5}
                                 labelLine={false} 
-                                label={({ cx, cy, midAngle, innerRadius, outerRadius, percent }) => {
+                                label={({ cx = 0, cy = 0, midAngle = 0, outerRadius = 0, percent = 0 }) => {
                                      const radius = outerRadius + 15;
                                      const x  = cx + radius * Math.cos(-midAngle * (Math.PI / 180));
                                      const y = cy + radius * Math.sin(-midAngle * (Math.PI / 180));
                                      return (percent > 0.05) ? <text x={x} y={y} fill="currentColor" className="text-zinc-600 dark:text-zinc-400 text-xs" textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central">{`${(percent * 100).toFixed(0)}%`}</text> : null;
                                 }}>
-                                {data.map((entry, index) => <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} stroke="transparent" />)}
+                                {data.map((_, index) => <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} stroke="transparent" />)}
                             </Pie>
                             <Tooltip content={<CustomTooltip />} />
                             <Legend iconType="circle" />

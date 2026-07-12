@@ -14,7 +14,7 @@ export const DAYS_OF_WEEK: { value: DayOfWeek; label: string }[] = [
 
 const scheduleYear = 2025;
 
-export const INITIAL_SCHEDULES: Schedule[] = [
+export const SAMPLE_SCHEDULES: Schedule[] = [
   {
     id: `semester-1-${scheduleYear}`,
     name: 'Semester 1',
@@ -113,6 +113,9 @@ export const INITIAL_SCHEDULES: Schedule[] = [
   },
 ];
 
+// New users begin with onboarding; existing local data is preserved by the storage layer.
+export const INITIAL_SCHEDULES: Schedule[] = [];
+
 export const DEFAULT_SETTINGS: Settings = {
   gracePeriod: 5,
   theme: 'system',
@@ -178,7 +181,7 @@ export const INITIAL_SUBJECT_META: SubjectMeta = {
 };
 
 
-export const INITIAL_LOGS: AttendanceLog[] = [
+export const SAMPLE_LOGS: AttendanceLog[] = [
   { id: '2025-07-09', date: '2025-07-09', arrivalTime: '07:58', departureTime: null },
   { id: '2025-07-08', date: '2025-07-08', arrivalTime: '07:44', departureTime: null },
   { id: '2025-07-04', date: '2025-07-04', arrivalTime: '07:39', departureTime: null },
@@ -216,6 +219,8 @@ export const INITIAL_LOGS: AttendanceLog[] = [
   { id: '2025-04-03', date: '2025-04-03', arrivalTime: '07:17', departureTime: null },
   { id: '2025-04-02', date: '2025-04-02', arrivalTime: '07:40', departureTime: null },
 ].sort((a, b) => b.date.localeCompare(a.date));
+
+export const INITIAL_LOGS: AttendanceLog[] = [];
 
 export const PALETTE = ["#778899", "#D2B48C", "#BC8F8F", "#829494", "#C7A27E", "#9E7E76", "#6e8eac", "#e0c1b6", "#a9c0a6", "#c9b19e", "#456882", "#d2c1b6"];
 
